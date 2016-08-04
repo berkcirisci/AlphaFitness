@@ -1,0 +1,152 @@
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/relativeLayout">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Record Workout"
+            android:id="@+id/textView"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageButton"
+            android:src="@drawable/profile"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:onClick="goToProfile"/>
+    </RelativeLayout>
+
+    <View style="@style/DividerHorizontal"
+        android:id="@+id/dividerHorizontal1"
+        android:layout_below="@+id/relativeLayout"/>
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@+id/dividerHorizontal1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <LinearLayout
+            android:id="@+id/linearLayout3"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="0.5"
+            android:touchscreenBlocksFocus="false">
+            <TextView
+                android:layout_width="match_parent"
+                android:id="@+id/textView1"
+                android:layout_height="match_parent"
+                android:text="DISTANCE"
+                android:gravity="center"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="30sp"
+                android:text="0.0"
+                android:id="@+id/textDistance"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:id="@+id/textView3"
+                android:layout_height="wrap_content"
+                android:text="KM"
+                android:gravity="center"
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
+        </LinearLayout>
+
+        <View style="@style/DividerVertical"/>
+
+        <LinearLayout
+            android:id="@+id/linearLayout4"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="0.5"
+            android:touchscreenBlocksFocus="false">
+            <TextView
+                android:layout_width="match_parent"
+                android:id="@+id/textView4"
+                android:layout_height="wrap_content"
+                android:text="DURATION"
+                android:gravity="center" />
+
+            <Chronometer
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/chronometer"
+                android:textSize="30sp"
+                android:format="H:MM:SS"
+                android:gravity="center"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:id="@+id/textView2"
+                android:layout_height="wrap_content"
+                android:text="Minutes"
+                android:gravity="center"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/map"
+    tools:context="com.example.berkcirisci.alphafitness.RecordWorkout"
+    android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/linearLayout2"
+        android:layout_above="@+id/frameLayout" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/frameLayout"
+        android:background="@color/colorPrimary">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="37dp"
+            android:onClick="TextChangeStartButton"
+            android:text="Start Workout"
+            android:id="@+id/button1"
+            android:layout_gravity="center"
+            android:enabled="true"
+            android:textColor="@color/abc_input_method_navigation_guard"
+            android:clickable="true"
+            android:background="@drawable/startworkout_button_shape"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:focusable="true"/>
+
+    </FrameLayout>
+
+</RelativeLayout>
