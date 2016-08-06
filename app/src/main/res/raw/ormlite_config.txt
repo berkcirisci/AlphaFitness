@@ -1,0 +1,37 @@
+#
+# generated on 2012/06/06 05:55:57
+#
+# --table-start--
+dataClass=com.example.berkcirisci.alphafitness.Workout
+tableName=workout
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+# --table-start--
+dataClass=com.example.berkcirisci.alphafitness.WorkoutPoint
+tableName=workoutpoint
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=latitude
+# --field-end--
+# --field-start--
+fieldName=longitude
+# --field-end--
+# --field-start--
+fieldName=currentTime
+# --field-end--
+# --field-start--
+fieldName=workout
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################

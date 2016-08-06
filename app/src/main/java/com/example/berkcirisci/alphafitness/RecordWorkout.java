@@ -1,27 +1,27 @@
 package com.example.berkcirisci.alphafitness;
 
-import android.*;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
+import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.Spinner;
+import android.widget.Chronometer;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.j256.ormlite.android.apptools.OpenHelperManager;
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+
+import java.sql.SQLException;
 
 import layout.MyService;
 
@@ -29,6 +29,19 @@ public class RecordWorkout extends FragmentActivity implements OnMapReadyCallbac
 
     private static final int PERMISSION_LOCATION_REQUEST_CODE = 1;
     private GoogleMap mMap;
+    private Chronometer chronometer;
+    private DatabaseHelper databaseHelper;
+    private Workout currentWorkout;
+
+
+    // This is how, DatabaseHelper can be initialized for future use
+    private DatabaseHelper getHelper() {
+        if (databaseHelper == null) {
+            databaseHelper = OpenHelperManager.getHelper(this,DatabaseHelper.class);
+        }
+        return databaseHelper;
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +52,7 @@ public class RecordWorkout extends FragmentActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         showPermissionDialog();
+        chronometer = (Chronometer) findViewById(R.id.chronometer);
     }
 
 
@@ -70,11 +84,21 @@ public class RecordWorkout extends FragmentActivity implements OnMapReadyCallbac
         Button p1_button = (Button) findViewById(R.id.button1);
         if (p1_button.getText() == "Start Workout") {
             p1_button.setText("Stop Workout");
-            startService(new Intent(RecordWorkout.this, MyService.class));
+
+            startWorkoutService();
+
+            chronometer.setBase(SystemClock.elapsedRealtime());
+            chronometer.start();
         } else {
             p1_button.setText("Start Workout");
             stopService(new Intent(RecordWorkout.this, MyService.class));
+            chronometer.stop();
+            chronometer.setBase(SystemClock.elapsedRealtime());
         }
+    }
+
+    private void startWorkoutService() {
+        startService(new Intent(RecordWorkout.this, MyService.class));
     }
 
     @Override
@@ -92,8 +116,17 @@ public class RecordWorkout extends FragmentActivity implements OnMapReadyCallbac
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                     this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                     PERMISSION_LOCATION_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (databaseHelper != null) {
+            OpenHelperManager.releaseHelper();
+            databaseHelper = null;
         }
     }
 }

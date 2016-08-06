@@ -95,13 +95,12 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/chronometer"
                 android:textSize="30sp"
-                android:format="H:MM:SS"
                 android:gravity="center"/>
             <TextView
                 android:layout_width="match_parent"
                 android:id="@+id/textView2"
                 android:layout_height="wrap_content"
-                android:text="Minutes"
+                android:text="seconds"
                 android:gravity="center"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
