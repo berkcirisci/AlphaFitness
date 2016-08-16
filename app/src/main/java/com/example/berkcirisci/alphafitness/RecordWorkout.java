@@ -1,47 +1,82 @@
 package com.example.berkcirisci.alphafitness;
 
 import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.vision.text.Text;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
-import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.dao.RuntimeExceptionDao;
 
-import java.sql.SQLException;
-
-import layout.MyService;
+import java.util.ArrayList;
 
 public class RecordWorkout extends FragmentActivity implements OnMapReadyCallback {
 
     private static final int PERMISSION_LOCATION_REQUEST_CODE = 1;
+    private static final String DEVICE_NAME = "MyButton";
     private GoogleMap mMap;
     private Chronometer chronometer;
     private DatabaseHelper databaseHelper;
-    private Workout currentWorkout;
-
+    private Polyline line = null;
+    private BluetoothAdapter mBluetoothAdapter;
+    private static boolean isRecording = false;
+    private static long chronometerBase = -1;
+    private Button p1_button;
+    private TextView textDistance;
 
     // This is how, DatabaseHelper can be initialized for future use
     private DatabaseHelper getHelper() {
-        if (databaseHelper == null) {
-            databaseHelper = OpenHelperManager.getHelper(this,DatabaseHelper.class);
-        }
-        return databaseHelper;
+        return OpenHelperManager.getHelper(this,DatabaseHelper.class);
     }
 
+    private BluetoothLeService mBluetoothLeService;
+    // Code to manage Service lifecycle.
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
+            if (!mBluetoothLeService.initialize()) {
+                Log.e("onServiceConnected", "Unable to initialize Bluetooth");
+                finish();
+            }
+            // Automatically connects to the device upon successful start-up initialization.
+            mBluetoothLeService.connect(myDevice.getAddress());
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBluetoothLeService = null;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +87,78 @@ public class RecordWorkout extends FragmentActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         showPermissionDialog();
+        initializeBLE();
+        p1_button = (Button) findViewById(R.id.button1);
         chronometer = (Chronometer) findViewById(R.id.chronometer);
+        textDistance = (TextView) findViewById(R.id.textDistance);
+        if(isRecording)
+        {
+            if(chronometer!= null){
+            chronometer.setBase(chronometerBase);
+            chronometer.start();
+            }
+            if(p1_button!= null)
+                p1_button.setText("Stop Workout");
+        }
     }
+
+    private void initializeBLE() {
+        // Use this check to determine whether BLE is supported on the device.  Then you can
+        // selectively disable BLE-related features.
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            finish();
+            return;
+        }
+
+        // Initializes a Bluetooth adapter.  For API level 18 and above, get a reference to
+        // BluetoothAdapter through BluetoothManager.
+        final BluetoothManager bluetoothManager =
+                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothAdapter = bluetoothManager.getAdapter();
+
+        // Checks if Bluetooth is supported on the device.
+        if (mBluetoothAdapter == null) {
+            finish();
+            return;
+        }
+        isFound = false;
+        mBluetoothAdapter.startLeScan(mLeScanCallback);
+    }
+
+    private boolean isFound;
+    private BluetoothDevice myDevice;
+    private Context context = this;
+    private android.bluetooth.BluetoothGattCallback myBLEGattCallBack = new BluetoothGattCallback() {
+    };
+    private BroadcastReceiver mGattUpdateReceiver= new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                Log.v("aaaaaaaaaa",intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+            }
+        }
+    };
+    // Device scan callback.
+    private BluetoothAdapter.LeScanCallback mLeScanCallback =
+            new BluetoothAdapter.LeScanCallback() {
+
+                @Override
+                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+                    if(device.getName()!=null)
+                        Log.v("RecordWorkout", device.getName());
+                    if(device.getName().equals(DEVICE_NAME)){
+                        mBluetoothAdapter.stopLeScan(this);
+                        if(!isFound){
+                            isFound = false;
+                            Log.v("RecordWorkout", "device is found");
+                            myDevice = device;
+                            bindService(new Intent(context, BluetoothLeService.class), mServiceConnection, BIND_AUTO_CREATE);
+                            registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+                        }
+                    }
+                }
+            };
 
 
     /**
@@ -81,19 +186,44 @@ public class RecordWorkout extends FragmentActivity implements OnMapReadyCallbac
     }
 
     public void TextChangeStartButton(View v) {
-        Button p1_button = (Button) findViewById(R.id.button1);
-        if (p1_button.getText() == "Start Workout") {
-            p1_button.setText("Stop Workout");
-
-            startWorkoutService();
-
-            chronometer.setBase(SystemClock.elapsedRealtime());
-            chronometer.start();
-        } else {
+        if (isRecording) {
+            isRecording = false;
             p1_button.setText("Start Workout");
             stopService(new Intent(RecordWorkout.this, MyService.class));
             chronometer.stop();
-            chronometer.setBase(SystemClock.elapsedRealtime());
+            long duration = SystemClock.elapsedRealtime() - chronometer.getBase();
+            createPolyLine();
+            if(mBluetoothLeService != null){
+                mBluetoothLeService.writeLedCharacteristic(0);
+                mBluetoothLeService.readStepCountCharacteristic();
+            }
+            float distance = Workout.updateLastWorkout(getHelper(), duration);
+            textDistance.setText(String.format("%.3f", distance/1000));
+        } else {
+            isRecording = true;
+            p1_button.setText("Stop Workout");
+            if(line != null)
+                line.remove();
+            if(mBluetoothLeService != null){
+                mBluetoothLeService.writeLedCharacteristic(1);
+            }
+
+            startWorkoutService();
+            chronometerBase = SystemClock.elapsedRealtime();
+            chronometer.setBase(chronometerBase);
+            chronometer.start();
+        }
+    }
+
+    private void createPolyLine() {
+        ArrayList<LatLng> path = Workout.getLastWorkoutPath(getHelper());
+        line = mMap.addPolyline(new PolylineOptions().addAll(path).width(5).color(Color.RED));
+        if(!path.isEmpty()){
+            LatLngBounds.Builder builder = LatLngBounds.builder();
+            for (LatLng point:path) {
+                builder.include(point);
+            }
+            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 100));
         }
     }
 
@@ -128,5 +258,16 @@ public class RecordWorkout extends FragmentActivity implements OnMapReadyCallbac
             OpenHelperManager.releaseHelper();
             databaseHelper = null;
         }
+        if(mBluetoothLeService != null)
+            mBluetoothLeService.disconnect();
+    }
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
     }
 }

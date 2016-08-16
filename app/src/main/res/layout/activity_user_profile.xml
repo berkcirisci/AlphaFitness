@@ -27,7 +27,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Peter Dole"
             android:id="@+id/userName"
             android:gravity="center"
             android:textStyle="bold"
@@ -56,7 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Gender:"
+                android:text="Height:"
                 android:id="@+id/textView11"
                 android:layout_weight="0.5"
                 android:gravity="center"
@@ -64,14 +63,26 @@
                 android:layout_marginBottom="10dp"
                 android:layout_gravity="center_vertical" />
 
-            <Spinner
+            <EditText
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/spinner1"
-                android:layout_weight="0.5"
+                android:layout_height="fill_parent"
+                android:text="0"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/height"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
-                android:layout_gravity="center_vertical" />
+                android:inputType="number"
+                android:textColor="@color/cast_intro_overlay_background_color"
+                android:gravity="bottom" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="cm"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:gravity="center_vertical" />
 
         </LinearLayout>
 
@@ -173,6 +184,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="fill_parent"
                 android:textAppearance="?android:attr/textAppearanceMedium"
+                android:id="@+id/weeklyDistance"
                 android:text="2.4 km"
                 android:textStyle="bold"
                 android:layout_alignParentRight="true"
@@ -208,6 +220,7 @@
                 android:layout_height="fill_parent"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="1hr 34min 05sec"
+                android:id="@+id/weeklyDuration"
                 android:textStyle="bold"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
@@ -241,7 +254,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="fill_parent"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="2 times"
+                android:id="@+id/weeklyCounts"
                 android:textStyle="bold"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
@@ -275,7 +288,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="fill_parent"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="4,100 Cal"
+                android:id="@+id/weeklyCalories"
                 android:textStyle="bold"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
@@ -331,6 +344,7 @@
                 android:layout_height="fill_parent"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="1254 km"
+                android:id="@+id/allTimeDistance"
                 android:textStyle="bold"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
@@ -364,7 +378,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="fill_parent"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="2day 1hr 34min 05sec"
+                android:id="@+id/allTimeDuration"
                 android:textStyle="bold"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
@@ -398,7 +412,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="fill_parent"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="123 times"
+                android:id="@+id/allTimeCounts"
                 android:textStyle="bold"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
@@ -431,7 +445,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="fill_parent"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="512,802 Cal"
+                android:id="@+id/allTimeCalories"
                 android:textStyle="bold"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"

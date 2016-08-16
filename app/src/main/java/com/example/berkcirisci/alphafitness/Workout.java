@@ -1,6 +1,22 @@
 package com.example.berkcirisci.alphafitness;
 
+import android.content.Context;
+import android.location.Location;
+import android.os.SystemClock;
+
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Polyline;
+import com.j256.ormlite.android.apptools.OpenHelperManager;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.ForeignCollectionField;
+import com.j256.ormlite.stmt.QueryBuilder;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by berkcirisci on 5.8.2016.
@@ -11,11 +27,102 @@ public class Workout {
     @DatabaseField(generatedId = true)
     int id;
 
+    @DatabaseField
+    long timeStamp;
+
+    @DatabaseField
+    float distance;
+
+    @DatabaseField
+    long duration;
+
+    @ForeignCollectionField
+    Collection<WorkoutPoint> workoutPoints;
+
     public Workout() {
+        timeStamp = System.currentTimeMillis();
         // needed by ormlite
     }
 
     public int getId() {
         return id;
     }
+
+    public static ArrayList<LatLng> getLastWorkoutPath(DatabaseHelper helper){
+        ArrayList<LatLng> result = new ArrayList<LatLng>();
+        try {
+            QueryBuilder<Workout, Integer> qb = helper.getWorkoutDao().queryBuilder();
+            qb.orderBy("id",false);
+            Workout lastWorkout = qb.queryForFirst();
+            for (WorkoutPoint wp:lastWorkout.workoutPoints) {
+                result.add(new LatLng(wp.getLatitude(), wp.getLongitude()));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static float updateLastWorkout(DatabaseHelper helper, long duration){
+        try {
+            RuntimeExceptionDao<Workout, Integer> workoutDao = helper.getWorkoutDao();
+            QueryBuilder<Workout, Integer> qb = workoutDao.queryBuilder();
+            qb.orderBy("id",false);
+            Workout lastWorkout = qb.queryForFirst();
+            int pathSize = lastWorkout.workoutPoints.size();
+            float distance = 0;
+            List<WorkoutPoint> points = new ArrayList(lastWorkout.workoutPoints);
+            for (int i = 1; i<pathSize;i++) {
+                Location locationA = new Location("point A");
+
+                locationA.setLatitude(points.get(i-1).getLatitude());
+                locationA.setLongitude(points.get(i-1).getLongitude());
+
+                Location locationB = new Location("point B");
+
+                locationB.setLatitude(points.get(i).getLatitude());
+                locationB.setLongitude(points.get(i).getLongitude());
+
+                distance += locationA.distanceTo(locationB);
+            }
+            lastWorkout.distance = distance;
+            lastWorkout.duration = duration;
+            workoutDao.update(lastWorkout);
+            return lastWorkout.distance;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public static Workout getSummary(DatabaseHelper helper, long timestamp){
+        Workout result = new Workout();
+        result.distance = 0;
+        result.duration = 0;
+        try {
+            List<Workout> list;
+            RuntimeExceptionDao<Workout, Integer> workoutDao = helper.getWorkoutDao();
+
+
+            if(timestamp != -1){
+                QueryBuilder<Workout, Integer> qb = workoutDao.queryBuilder();
+                list = qb.where().gt("timeStamp", timestamp).query();
+            }
+            else{
+                list = workoutDao.queryForAll();
+            }
+            for (Workout workout : list) {
+                result.distance += workout.distance;
+                result.duration += workout.duration;
+            }
+            result.id = list.size();
+        }
+        catch (SQLException e)
+
+        {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
 }

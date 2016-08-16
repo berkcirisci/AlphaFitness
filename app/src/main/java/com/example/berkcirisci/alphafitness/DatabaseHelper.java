@@ -20,11 +20,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     // name of the database file for your application -- change to something appropriate for your app
     private static final String DATABASE_NAME = "helloAndroid.db";
     // any time you make changes to your database objects, you may have to increase the database version
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 6;
 
     // the DAO object we use to access the tables
     private RuntimeExceptionDao<Workout, Integer> workoutDao = null;
     private RuntimeExceptionDao<WorkoutPoint, Integer> workoutPointDao = null;
+    private RuntimeExceptionDao<User, Integer> userDao = null;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION, R.raw.ormlite_config);
@@ -38,7 +39,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {
         try {
             Log.i(DatabaseHelper.class.getName(), "onCreate");
-            TableUtils.createTable(connectionSource, Workout.class);
+            TableUtils.createTableIfNotExists(connectionSource, WorkoutPoint.class);
+            TableUtils.createTableIfNotExists(connectionSource, Workout.class);
+            TableUtils.createTableIfNotExists(connectionSource, User.class);
         } catch (SQLException e) {
             Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
             throw new RuntimeException(e);
@@ -54,6 +57,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         try {
             Log.i(DatabaseHelper.class.getName(), "onUpgrade");
             TableUtils.dropTable(connectionSource, Workout.class, true);
+            TableUtils.dropTable(connectionSource, WorkoutPoint.class, true);
+            TableUtils.dropTable(connectionSource, User.class, true);
             // after we drop the old databases, we create the new ones
             onCreate(db, connectionSource);
         } catch (SQLException e) {
@@ -76,6 +81,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         return workoutPointDao;
     }
 
+    public RuntimeExceptionDao<User, Integer> getUserDao() {
+        if (userDao == null) {
+            userDao = getRuntimeExceptionDao(User.class);
+        }
+        return userDao;
+    }
+
     /**
      * Close the database connections and clear any cached DAOs.
      */
@@ -84,5 +96,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         super.close();
         workoutDao = null;
         workoutPointDao = null;
+        userDao = null;
     }
 }

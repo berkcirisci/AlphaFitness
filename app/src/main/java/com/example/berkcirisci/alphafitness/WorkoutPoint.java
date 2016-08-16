@@ -20,7 +20,7 @@ public class WorkoutPoint {
     @DatabaseField
     long currentTime;
 
-    @DatabaseField(foreign = true)
+    @DatabaseField(foreign = true, foreignAutoRefresh = true)
     Workout workout;
 
     public WorkoutPoint() {

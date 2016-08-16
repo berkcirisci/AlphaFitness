@@ -1,4 +1,4 @@
-package layout;
+package com.example.berkcirisci.alphafitness;
 
 import android.Manifest;
 import android.app.Service;
@@ -187,6 +187,7 @@ public class MyService extends Service implements LocationListener, ConnectionCa
     }
 
     private void updateDB() {
+        Log.v("updateDB" , "hello");
         getHelper()
                 .getWorkoutPointDao()
                 .create(new WorkoutPoint(
